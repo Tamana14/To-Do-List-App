@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To-Do List App</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #3c0fdf, 20%, #ce0083 80%);
+            font-family: 'Poppins', sans-serif;
+        }
+        .app-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .todo-box {
+            background-color: #1cafe4;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+        }
+        h1 {
+            color: #a7ec38;
+            font-size: 2.5em;
+        }
+        .task-input input, select, button {
+            margin: 15px 8px;
+            padding: 12px;
+            border-radius: 8px;
+            border: none;
+            outline: none;
+            font-size: 1em;
+        }
+        .task-input input[type="text"] {
+            width: 45%;
+        }
+        .task-input input[type="date"] {
+            width: 30%;
+        }
+        .task-input button {
+            background-color: #6c5ce7;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .task-input button:hover {
+            background-color: #4834d4;
+        }
+        .task-filters button {
+            margin: 10px 5px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 20px;
+            background-color: #edda06;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .task-filters button:hover {
+            background-color: #ec0fbc;
+        }
+        .task-list {
+            margin-top: 30px;
+            text-align: left;
+        }
+        .task-item {
+            padding: 15px;
+            margin: 10px 0;
+            background-color: #f1f2f6;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background-color 0.3s;
+        }
+        .completed {
+            text-decoration: line-through;
+            color: #b2bec3;
+            background-color: #fcf7fd !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="todo-box">
+            <h1>To-Do List</h1>
+            <div class="task-input">
+                <input type="text" id="task" placeholder="What needs to be done?">
+                <select id="priority">
+                    <option value="High">High</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Low">Low</option>
+                </select>
+                <input type="date" id="due-date">
+                <button onclick="addTask()">Add</button>
+            </div>
+            <div class="task-filters">
+                <button onclick="filterTasks('all')">All</button>
+                <button onclick="filterTasks('pending')">Pending</button>
+                <button onclick="filterTasks('completed')">Done</button>
+            </div>
+            <div class="task-list" id="task-list"></div>
+        </div>
+    </div>
+    <script>
+        let tasks = [];
+
+        function addTask() {
+            const taskInput = document.getElementById('task');
+            const priority = document.getElementById('priority').value;
+            const dueDate = document.getElementById('due-date').value;
+            const taskText = taskInput.value;
+
+            if (taskText === '') return;
+
+            const task = {
+                id: Date.now(),
+                text: taskText,
+                priority,
+                dueDate,
+                completed: false
+            };
+            tasks.push(task);
+            taskInput.value = '';
+            renderTasks();
+        }
+
+        function renderTasks(filter = 'all') {
+            const taskList = document.getElementById('task-list');
+            taskList.innerHTML = '';
+
+            const sortedTasks = tasks.sort((a, b) => {
+                const priorities = { High: 1, Medium: 2, Low: 3 };
+                return priorities[a.priority] - priorities[b.priority];
+            });
+
+            const filteredTasks = sortedTasks.filter(task => {
+                if (filter === 'pending') return !task.completed;
+                if (filter === 'completed') return task.completed;
+                return true;
+            });
+
+            filteredTasks.forEach(task => {
+                const taskItem = document.createElement('div');
+                taskItem.className = 'task-item ' + (task.completed ? 'completed' : '');
+                taskItem.innerHTML = `
+                    <span>${task.text} - ${task.priority} - Due: ${task.dueDate || 'No date'}</span>
+                    <button onclick="toggleTask(${task.id})">${task.completed ? 'Undo' : 'Done'}</button>
+                    <button onclick="deleteTask(${task.id})">Remove</button>
+                `;
+                taskList.appendChild(taskItem);
+            });
+        }
+
+        function toggleTask(id) {
+            tasks = tasks.map(task => {
+                if (task.id === id) task.completed = !task.completed;
+                return task;
+            });
+            renderTasks();
+        }
+
+        function deleteTask(id) {
+            tasks = tasks.filter(task => task.id !== id);
+            renderTasks();
+        }
+
+        function filterTasks(filter) {
+            renderTasks(filter);
+        }
+    </script>
+</body>
+</html>
+
